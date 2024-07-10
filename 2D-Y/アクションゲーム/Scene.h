@@ -12,6 +12,7 @@ struct Chara
 	Math::Matrix rotationMat;
 	Math::Matrix transMat;
 	Math::Matrix mat;
+	Math::Color color;
 };
 
 class Scene
@@ -20,11 +21,13 @@ private:
 	
 	struct Chara player;
 
-	struct Chara enemy;
-	int moveCount;//敵が反転するカウント
+	//敵
+	static const int enemyNum = 3;
+	struct Chara enemy[enemyNum];
+	int moveCount[enemyNum];//敵が反転するカウント
 
 
-	// テクスチャ ・・・ 画像データ
+	// テクスチャ
 	KdTexture charaTex;
 
 	const float Gravity = 1.0f;		//重力
@@ -90,6 +93,10 @@ public:
 
 	//敵描画
 	void EnemyDraw();
+
+	//プレイヤーと敵の当たり判定
+	void PlayerEnemyHit();
+
 
 private:
 

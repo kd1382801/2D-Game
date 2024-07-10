@@ -34,7 +34,7 @@ void Scene::Draw2D()
 	EnemyDraw();
 
 	SHADER.m_spriteShader.SetMatrix(player.mat);				//画像に行列をセット
-	SHADER.m_spriteShader.DrawTex(&charaTex, Math::Rectangle{ 0,0,64,64 }, 1.0f);	//画像の描画
+	SHADER.m_spriteShader.DrawTex_Color(&charaTex, Math::Rectangle{ 0,0,64,64 }, &player.color);	//画像の描画
 
 	Math::Matrix lineMat = DirectX::XMMatrixIdentity();//単位行列　行列の初期化
 	SHADER.m_spriteShader.SetMatrix(lineMat);
@@ -86,6 +86,7 @@ void Scene::Update()
 	}*/
 
 	PlayerMapHit();
+	PlayerEnemyHit();
 
 	player.x += player.moveX;//X座標の設定
 	player.y += player.moveY;//Y座標の設定
@@ -133,6 +134,7 @@ void Scene::Init()
 	player.scaleX = 1.0f;
 	player.rotation = 0.0f;
 	playerJumpFlg = true;
+	
 
 	LoadMap();
 	mapTex.Load("Texture/Map/MapChip.png");
@@ -311,37 +313,76 @@ void Scene::PlayerMapHit()
 
 void Scene::EnemyInit()
 {
-	enemy.x = 800.0f;
-	enemy.y = -250.0f;
-	enemy.moveX = 5.0f;
-	enemy.moveY = 0.0f;
-	enemy.scaleX = 1.0f;
-	moveCount = 60;
+	for (int i = 0; i < enemyNum; i++)
+	{
+		enemy[i].x = 800.0f;
+		enemy[i].y = -250.0f + (i * 64);
+		enemy[i].moveX = 5.0f;
+		enemy[i].moveY = 0.0f;
+		enemy[i].scaleX = 1.0f;
+		moveCount[i] = 60;
+	}
 }
 
 void Scene::EnemyUpdate()
 {
-	enemy.scaleMat = Math::Matrix::CreateScale(enemy.scaleX, 1, 1);					//拡大行列
-	enemy.transMat = Math::Matrix::CreateTranslation(enemy.x - scrollX, enemy.y, 0);//移動行列
-	enemy.mat = enemy.scaleMat * enemy.transMat;	//行列の合成
-
-	moveCount -= 1;
-	if (moveCount <= 0)
+	for (int i = 0; i < enemyNum; i++)
 	{
-		enemy.scaleX *= -1;
-		enemy.moveX *= -1;
-		moveCount = 60;
+		enemy[i].scaleMat = Math::Matrix::CreateScale(enemy[i].scaleX, 1, 1);				     //拡大行列
+		enemy[i].transMat = Math::Matrix::CreateTranslation(enemy[i].x - scrollX, enemy[i].y, 0);//移動行列
+		enemy[i].mat = enemy[i].scaleMat * enemy[i].transMat;	//行列の合成
+
+		moveCount[i] -= 1;
+		if (moveCount[i] <= 0)
+		{
+			enemy[i].scaleX *= -1;
+			enemy[i].moveX *= -1;
+			moveCount[i] = 60;
+		}
+
+
+
+		enemy[i].x += enemy[i].moveX;
+		enemy[i].y += enemy[i].moveY;
 	}
-
-
-
-	enemy.x += enemy.moveX;
-	enemy.y += enemy.moveY;
 }
 
 void Scene::EnemyDraw()
 {
-	Math::Color color{ 1.0f,0.0f,0.0f,1.0f };
-	SHADER.m_spriteShader.SetMatrix(enemy.mat);
-	SHADER.m_spriteShader.DrawTex_Color(&charaTex, Math::Rectangle{ 0,0,64,64 }, &color);
+	for (int i = 0; i < enemyNum; i++)
+	{
+		enemy[i].color = { 1.0f,0.0f,0.0f,1.0f };
+		SHADER.m_spriteShader.SetMatrix(enemy[i].mat);
+		SHADER.m_spriteShader.DrawTex_Color(&charaTex, Math::Rectangle{ 0,0,64,64 }, &enemy[i].color);
+	}
+}
+
+void Scene::PlayerEnemyHit()
+{
+	for (int i = 0; i < enemyNum; i++)
+	{
+		//プレイヤー
+		const float playerLeft   = player.x - charaRadius;
+		const float playerRight  = player.x + charaRadius;
+		const float playerBottom = player.y - charaRadius;
+		const float playerTop    = player.y + charaRadius;
+
+		//敵
+		const float enemyLeft   = enemy[i].x - charaRadius;
+		const float enemyRight  = enemy[i].x + charaRadius;
+		const float enemyBottom = enemy[i].y - charaRadius;
+		const float enemyTop    = enemy[i].y + charaRadius;
+
+		if (playerRight > enemyLeft && playerLeft < enemyRight)	//縦で重なっているか
+		{
+			if (playerTop > enemyBottom && playerBottom < enemyTop)	//横で重なっているか
+			{
+				player.color = { 1.0f,0.5f,0.0f,1.0f };
+			}
+		}
+		else
+		{
+			player.color = { 1.0f,1.0f,1.0f,1.0f };
+		}
+	}
 }
