@@ -52,8 +52,8 @@ void Scene::Draw2D()
 
 	//文字列はテクスチャなどを描画した後に書くこと
 	// 文字列表示
-	SHADER.m_spriteShader.DrawString(180, 170, "基本図形２", Math::Vector4(0, 0, 0, 1));
-	SHADER.m_spriteShader.DrawString(180+8, 170-5, "基本図形２", Math::Vector4(1, 1, 0, frame / 180.0f));
+	SHADER.m_spriteShader.DrawString(180, 170, "基本図形３", Math::Vector4(0, 0, 0, 1));
+	SHADER.m_spriteShader.DrawString(180+8, 170-5, "基本図形３", Math::Vector4(1, 1, 0, frame / 180.0f));
 }
 
 

@@ -373,12 +373,10 @@ void Scene::PlayerEnemyHit()
 		const float enemyBottom = enemy[i].y - charaRadius;
 		const float enemyTop    = enemy[i].y + charaRadius;
 
-		if (playerRight > enemyLeft && playerLeft < enemyRight)	//c‚Åd‚È‚Á‚Ä‚¢‚é‚©
+		if (playerRight > enemyLeft && playerLeft < enemyRight && playerTop > enemyBottom && playerBottom < enemyTop)	//c‚Æ‰¡‚Åd‚È‚Á‚Ä‚¢‚é‚©
 		{
-			if (playerTop > enemyBottom && playerBottom < enemyTop)	//‰¡‚Åd‚È‚Á‚Ä‚¢‚é‚©
-			{
 				player.color = { 1.0f,0.5f,0.0f,1.0f };
-			}
+				break;
 		}
 		else
 		{
