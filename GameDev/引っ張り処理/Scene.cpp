@@ -54,6 +54,28 @@ void Scene::Update()
 		clickFlg = false;
 	}
 
+	//ƒoƒEƒ“ƒhˆ—(ã‰º¶‰E)
+	if (charaY > HEIGHT / 2 - 32) {
+		moveY *= -1;
+		charaY = HEIGHT / 2 - 32;//‰æ–Ê’[‚ÅŒÅ’è
+	}
+	if (charaY < -HEIGHT / 2 + 32) {
+		moveY *= -1;
+		charaY = -HEIGHT / 2 + 32;
+	}
+	if (charaX < -WIDTH / 2 + 32) {
+		moveX *= -1;
+		charaX = -WIDTH / 2 + 32;
+	}
+	if (charaX > WIDTH / 2 - 32) {
+		moveX *= -1;
+		charaX = WIDTH / 2 - 32;
+	}
+
+	//ˆÚ“®—ÊŒ¸‘¬
+	moveX *= 0.98f;
+	moveY *= 0.98f;
+
 
 	//“G‚ÆƒLƒƒƒ‰‚Ì“–‚½‚è”»’è(‰~”»’è)
 	float a = enemyX - charaX;
@@ -95,7 +117,7 @@ void Scene::Init()
 	moveX = 0;
 	moveY = 0;
 	angle = 0;
-	speed = 2;
+	speed = 100;
 
 	//“G
 	enemyX = 100;
