@@ -12,32 +12,7 @@ private:
 	//色
 	Math::Color color;
 
-	//星空用
-	static const int starNum = 100;
-	float starX[starNum];
-	float starY[starNum];
-
-	//三角形用
-	float triX1;
-	float triY1;
-	float triX2;
-	float triY2;
-	float triX3;
-	float triY3;
-
-	float triMoveX1;
-	float triMoveY1;
-	float triMoveX2;
-	float triMoveY2;
-	float triMoveX3;
-	float triMoveY3;
-
-	//敵
-	float enemyCx;		//中心X
-	float enemyCy;		//中心Y
-	float enemyRadius;	//半径
-	float enemyDeg;		//角度
-
+	
 	//フレーム数
 	int frame;
 
@@ -56,20 +31,11 @@ public:
 	// 描画処理
 	void Draw2D();
 
-	//星空用
-	void InitStars();
-	void UpdateStars();
-	void DrawStars();
+	//オリジナルの円描画関数
+	void DrawCircleEx(float cx, float cy, float radiusX, float radiusY, Math::Color* pColor);
 
-	//三角形用
-	void InitTri();
-	void UpdateTri();
-	void DrawTri();
-
-	//敵
-	void InitEnemy();
-	void UpdateEnemy();
-	void DrawEnemy();
+	//多角形描画関数
+	void DrawPolygon(float cx, float cy, float radiusX, float radiusY, float vertexNum, Math::Color* pColor,bool paintFlg);
 
 	// GUI処理
 	void ImGuiUpdate();

@@ -7,48 +7,15 @@ void Scene::Draw2D()
 	color = { 0,0,0,1 };
 	SHADER.m_spriteShader.DrawBox(0, 0, 360, 200, &color, true);
 
-	DrawStars();
-	DrawTri();
-
-	//円軌道
-	float a, b, c = 100, deg = 30;
-
-	//中心点
-	color = { 1,1,1,1 };
-	SHADER.m_spriteShader.DrawPoint(0, 0, &color);
-
-	c = 200;
-	for (deg = 0; deg < 360; deg += 1)
-	{
-		a = cos(deg * 3.14f / 180) * c;
-		b = sin(deg * 3.14f / 180) * c;
-		color = { 0,1,0,1 };
-		SHADER.m_spriteShader.DrawPoint(0 + a, 0 + b, &color);
+	if (GetAsyncKeyState('C') & 0x8000) {
+		for (int i = 0; i < 50; i++) {
+			color = { rand() / 32767.0f,rand() / 32767.0f,rand() / 32767.0f,1 };
+			DrawCircleEx(rand() % 640 - 320, rand() % 360 - 180, rand() % 100, rand() % 100, &color);
+		}
 	}
-
-	//楕円の描画
-	c = 200;
-	for (deg = 0; deg < 360; deg += 1)
-	{
-		a = cos(deg * 3.14f / 180) * c;
-		b = sin(deg * 3.14f / 180) * c/2;
-		color = { 0,1,0,1 };
-		SHADER.m_spriteShader.DrawPoint(0 + a, 0 + b, &color);
-	}
-
-	//渦巻の描画
-	c = 10;
-	for (deg = 0; deg < 360 * 3; deg += 1)
-	{
-		a = cos((deg + frame) * 3.14f / 180) * c;
-		b = sin((deg + frame) * 3.14f / 180) * c;
-		color = { 0,1,0,1 };
-		SHADER.m_spriteShader.DrawPoint(0 + a, 0 + b, &color);
-
-		c += 0.1f;
-	}
-
-	DrawEnemy();
+	
+	color = { 0,1,0,1 };
+	DrawPolygon(100, 50, 100, 100, 6, &color, true);
 
 	//文字列はテクスチャなどを描画した後に書くこと
 	// 文字列表示
@@ -57,11 +24,9 @@ void Scene::Draw2D()
 }
 
 
+
 void Scene::Update()
 {
-	UpdateStars();
-	UpdateTri();
-	UpdateEnemy();
 	//フレーム数を増やす
 	frame++;
 
@@ -72,9 +37,6 @@ void Scene::Init()
 	//乱数の初期化
 	srand(timeGetTime());
 
-	InitStars();
-	InitTri();
-	InitEnemy();
 	frame = 0;
 }
 
@@ -83,171 +45,54 @@ void Scene::Release()
 	
 }
 
-void Scene::InitTri()
+void Scene::DrawCircleEx(float cx, float cy, float radiusX, float radiusY, Math::Color* pColor)
 {
-	triX1 = rand() % 640 - 320;
-	triY1 = rand() % 360 - 180;
+	//円軌道
+	float a, b, deg;
 
-	triX2 = rand() % 640 - 320;
-	triY2 = rand() % 360 - 180;
-
-	triX3 = rand() % 640 - 320;
-	triY3 = rand() % 360 - 180;
-
-	triMoveX1 = 3;
-	triMoveY1 = 3;
-	triMoveX2 = 3;
-	triMoveY2 = 3;
-	triMoveX3 = 3;
-	triMoveY3 = 3;
-}
-
-void Scene::UpdateTri()
-{
-	//頂点1
-	triX1 += triMoveX1;
-	triY1 += triMoveY1;
-	if (triX1 > screenRight) //右端判定
-	{
-		triMoveX1 *= -1;
-	}
-	if (triX1 < screenLeft)	 //左端判定
-	{
-		triMoveX1 *= -1;
-	}
-	if (triY1 > screenTop) 	 //上端判定
-	{
-		triMoveY1 *= -1;
-	}
-	if (triY1 < screenBottom)//下端判定
-	{
-		triMoveY1 *= -1;
-	}
 	
-	//頂点2
-	triX2 += triMoveX2;
-	triY2 += triMoveY2;
+	for (deg = 0; deg < 360; deg += 1)
+	{
+		a = cos(deg * 3.14f / 180) * radiusX;
+		b = sin(deg * 3.14f / 180) * radiusY;
+		SHADER.m_spriteShader.DrawPoint(cx + a, cy + b, pColor);
+	}
 
-	if (triX2 > screenRight) //右端判定
-	{
-		triMoveX2 *= -1;
-	}
-	if (triX2 < screenLeft)	 //左端判定
-	{
-		triMoveX2 *= -1;
-	}
-	if (triY2 > screenTop) 	 //上端判定
-	{
-		triMoveY2 *= -1;
-	}
-	if (triY2 < screenBottom)//下端判定
-	{
-		triMoveY2 *= -1;
-	}
-	
-	//頂点3
-	triX3 += triMoveX3;
-	triY3 += triMoveY3;
-
-	if (triX3 > screenRight) //右端判定
-	{
-		triMoveX3 *= -1;
-	}
-	if (triX3 < screenLeft)	 //左端判定
-	{
-		triMoveX3 *= -1;
-	}
-	if (triY3 > screenTop) 	 //上端判定
-	{
-		triMoveY3 *= -1;
-	}
-	if (triY3 < screenBottom)//下端判定
-	{
-		triMoveY3 *= -1;
-	}
-	
-	
-	
 }
 
-void Scene::DrawTri()
+void Scene::DrawPolygon(float cx, float cy, float radiusX, float radiusY, float vertexNum, Math::Color* pColor,bool paintFlg)
 {
-	color = { 0,1,0,0.2f };
-	SHADER.m_spriteShader.DrawTriangle(triX1, triY1, triX2, triY2, triX3, triY3, &color, true);
-}
+	//円軌道
+	float a, b, deg;				//現在の点の情報
+	float aNext, bNext, degNext;	//次の点の情報
+	float intervalDeg;				//角度の間隔
+	intervalDeg = 360 / vertexNum;	//頂点数で割る
 
-void Scene::InitEnemy()
-{
-	enemyCx = 0;
-	enemyCy = 0;
-	enemyRadius = 100;
-	enemyDeg = 90;
-}
-
-void Scene::UpdateEnemy()
-{
-	//enemyDeg += 5; //反時計回り
-	enemyDeg -= 5; //時計回り
-
-	//螺旋
-	//enemyCx += 0.2f;
-
-	//渦巻
-	//enemyRadius -= 0.1f;
-}
-
-void Scene::DrawEnemy()
-{
-	float a, b;
-	//a = cos(enemyDeg * 3.14f / 180) * enemyRadius;
-	a = cos(enemyDeg * 3.14f / 180) * enemyRadius * 2; //楕円の動き
-	b = sin(enemyDeg * 3.14f / 180) * enemyRadius;
-
-	color = { 1,0,1,1 };
-	SHADER.m_spriteShader.DrawCircle(enemyCx + a, enemyCy + b, 15, &color, true);
-}
-
-//星初期化
-void Scene::InitStars()
-{
-	for (int i = 0; i < starNum; i++) 
+	for (deg = 0; deg < 360; deg += intervalDeg)
 	{
-		starX[i] = rand() % 640 - 320;
-		starY[i] = rand() % 360 - 180;
-	}
-}
+		//現在の点
+		a = cos(DirectX::XMConvertToRadians(deg)) * radiusX;
+		b = sin(DirectX::XMConvertToRadians(deg)) * radiusY;
+		//SHADER.m_spriteShader.DrawPoint(cx + a, cy + b, pColor);
+		//SHADER.m_spriteShader.DrawCircle(cx + a, cy + b, 10, pColor, false);
 
-//星更新
-void Scene::UpdateStars()
-{
-	//星を動かす
-	for (int i = 0; i < starNum; i++)
-	{
-		//if (i < starNum / 2){starX[i] -= 1;}		if(i % 2 == 0)でもok
-		//else {starX[i] += 1;}
+		//次の点
+		degNext = deg + intervalDeg;
+		aNext = cos(DirectX::XMConvertToRadians(degNext)) * radiusX;
+		bNext = sin(DirectX::XMConvertToRadians(degNext)) * radiusY;
+		//SHADER.m_spriteShader.DrawPoint(cx + aNext, cy + bNext, pColor);
+		//SHADER.m_spriteShader.DrawCircle(cx + aNext, cy + bNext, 20, pColor, false);
 
-		starY[i] -= 1;
-
-		//画面下端チェック
-		if (starY[i] < screenBottom)
-		{
-			starY[i] = screenTop + 1;
+		if (!paintFlg) {
+			//現在の点と次の点を線で結ぶ
+			SHADER.m_spriteShader.DrawLine(cx + a, cy + b, cx + aNext, cy + bNext, pColor);
+		}
+		else {
+			//塗りつぶしの場合
+			SHADER.m_spriteShader.DrawTriangle(cx, cy, cx + a, cy + b, cx + aNext, cy + bNext, pColor, true);
 		}
 	}
-}
 
-//星描画
-void Scene::DrawStars()
-{
-	for (int i = 0; i < starNum; i++)
-	{
-		color = {0.5f + rand() / 32767.0f,0.5f + rand() / 32767.0f,0.5f + rand() / 32767.0f,1};
-		SHADER.m_spriteShader.DrawPoint(starX[i]  ,starY[i]  , &color);
-		SHADER.m_spriteShader.DrawPoint(starX[i]+1,starY[i]  , &color);
-		SHADER.m_spriteShader.DrawPoint(starX[i]  ,starY[i]+1, &color);
-		SHADER.m_spriteShader.DrawPoint(starX[i]+1,starY[i]+1, &color);
-		//SHADER.m_spriteShader.DrawCircle(starX[i],starY[i],3, &color);
-	}
 }
 
 void Scene::ImGuiUpdate()
