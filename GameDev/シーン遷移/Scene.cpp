@@ -158,7 +158,7 @@ void Scene::ChangeScene()
 	{
 		if (!KeyFlg)
 		{
-			nowScene = SceneType::Title;
+			nowScene = SceneType::Game;
 			KeyFlg = true;
 		}
 	}
