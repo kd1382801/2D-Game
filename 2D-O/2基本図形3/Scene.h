@@ -12,6 +12,8 @@ private:
 	//色
 	Math::Color color;
 
+	float size;//サイズ(半径)
+	float degree;//角度
 	
 	//フレーム数
 	int frame;
@@ -35,7 +37,11 @@ public:
 	void DrawCircleEx(float cx, float cy, float radiusX, float radiusY, Math::Color* pColor);
 
 	//多角形描画関数
-	void DrawPolygon(float cx, float cy, float radiusX, float radiusY, float vertexNum, Math::Color* pColor,bool paintFlg);
+	void DrawPolygon(float cx, float cy, float radiusX, float radiusY, float vertexNum = 3, float startDeg = 90,
+											Math::Color* pColor = &Math::Color(1,1,1,1), bool paintFlg = true);
+
+	//花火
+	void DrawFireworks(float cx, float cy);
 
 	// GUI処理
 	void ImGuiUpdate();

@@ -15,7 +15,13 @@ void Scene::Draw2D()
 	}
 	
 	color = { 0,1,0,1 };
-	DrawPolygon(100, 50, 100, 100, 6, &color, true);
+	DrawPolygon(0, 0, 100, 100, frame / 60 + 1, 90, &color, false); 
+
+	color = { 1,1,0,1 };
+	DrawPolygon(200, 50, size, size, 6, degree, &color, false);
+	DrawPolygon(200, 50, size, size);
+
+	DrawFireworks(-200,50);
 
 	//文字列はテクスチャなどを描画した後に書くこと
 	// 文字列表示
@@ -27,9 +33,24 @@ void Scene::Draw2D()
 
 void Scene::Update()
 {
+	//上下キーで拡大縮小
+	if (GetAsyncKeyState(VK_UP) & 0x8000) {
+		size += 1;
+	}
+	if (GetAsyncKeyState(VK_DOWN) & 0x8000) {
+		size -= 1;
+	}
+	if (GetAsyncKeyState(VK_LEFT) & 0x8000) {
+		degree += 2;
+	}
+	if (GetAsyncKeyState(VK_RIGHT) & 0x8000) {
+		degree -= 2;
+	}
+	
+
+
 	//フレーム数を増やす
 	frame++;
-
 }
 
 void Scene::Init()
@@ -37,6 +58,8 @@ void Scene::Init()
 	//乱数の初期化
 	srand(timeGetTime());
 
+	size = 20;
+	degree = 90;
 	frame = 0;
 }
 
@@ -60,7 +83,7 @@ void Scene::DrawCircleEx(float cx, float cy, float radiusX, float radiusY, Math:
 
 }
 
-void Scene::DrawPolygon(float cx, float cy, float radiusX, float radiusY, float vertexNum, Math::Color* pColor,bool paintFlg)
+void Scene::DrawPolygon(float cx, float cy, float radiusX, float radiusY, float vertexNum,float startDeg, Math::Color* pColor,bool paintFlg)
 {
 	//円軌道
 	float a, b, deg;				//現在の点の情報
@@ -68,7 +91,7 @@ void Scene::DrawPolygon(float cx, float cy, float radiusX, float radiusY, float 
 	float intervalDeg;				//角度の間隔
 	intervalDeg = 360 / vertexNum;	//頂点数で割る
 
-	for (deg = 0; deg < 360; deg += intervalDeg)
+	for (deg = startDeg; deg < 360 + startDeg; deg += intervalDeg)
 	{
 		//現在の点
 		a = cos(DirectX::XMConvertToRadians(deg)) * radiusX;
@@ -93,6 +116,21 @@ void Scene::DrawPolygon(float cx, float cy, float radiusX, float radiusY, float 
 		}
 	}
 
+}
+
+void Scene::DrawFireworks(float cx, float cy)
+{
+	float a, b, c = 100, deg;
+
+	for (c = 0; c < 100; c += 15) {
+		color = { rand() / 32767.0f,rand() / 32767.0f,rand() / 32767.0f,1};
+		for (deg = 0; deg < 360; deg += 10)//円1周分のループ
+		{
+			a = cos(deg * 3.14f / 180) * c;
+			b = sin(deg * 3.14f / 180) * c;
+			SHADER.m_spriteShader.DrawCircle(cx + a, cy + b, 3, &color);
+		}
+	}
 }
 
 void Scene::ImGuiUpdate()
