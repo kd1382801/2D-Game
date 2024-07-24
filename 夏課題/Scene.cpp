@@ -41,7 +41,7 @@ void Scene::Init()
 	srand(timeGetTime());
 
 	//ゲーム開始最初のシーン:タイトル
-	nowScene = SceneType::Game;
+	nowScene = SceneType::Title;
 	frame = 0;
 
 	wcolor = { 1,1,1,1 };
@@ -90,15 +90,25 @@ void Scene::DrawGame()
 	}
 
 	if (doFadeInOut) {
-		FadeInOut();
+		FadeInOut(&changeStageFlg);
 	}
+
 	char str[80];
-	sprintf_s(str, sizeof(str), "%d", score);
-	SHADER.m_spriteShader.DrawString(100, 150, str, Math::Vector4(0, 1, 0, 1));
+	sprintf_s(str, sizeof(str), "%d / %d", nowRoom + 1,roomNum);
+	//sprintf_s(str, sizeof(str), "%d", clearFrame / 60);
+	//sprintf_s(str, sizeof(str), "%f", player.y);
+	if (!changeStageFlg) {
+		SHADER.m_spriteShader.DrawString(100, 150, str, Math::Vector4(0, 0, 0, 1));
+	}
+	else {
+		SHADER.m_spriteShader.DrawString(100, 150, str, Math::Vector4(1, 1, 1, 1));
+	}
 }
 
 void Scene::UpdateGame()
 {
+	clearFrame++;
+	
 	//キーが押されたら色反転
 	if (GetAsyncKeyState('M') & 0x8000) {
 		if (!doFadeInOut) {
@@ -117,12 +127,20 @@ void Scene::UpdateGame()
 
 	UpdateMap();
 
-
+	//3つクリアしたらリザルトへ移動
+	if (nowRoom >= roomNum) {
+		nowScene = Result;
+	}
 }
 
 void Scene::DrawResult()
 {
+	SHADER.m_spriteShader.DrawBox(0, 0, 320, 180, &wcolor, true);
 
+
+	char str[80];
+	sprintf_s(str, sizeof(str), "クリアタイム：%d秒", clearFrame / 60);
+	SHADER.m_spriteShader.DrawString(0, 0, str, Math::Vector4(0, 0, 0, 1));
 }
 
 void Scene::UpdateResult()
@@ -134,7 +152,7 @@ void Scene::UpdateResult()
 
 void Scene::InitPlayer()
 {
-	player = { 0,0,0,0,false};
+	player = { room[nowRoom].pX,room[nowRoom].pY,0,0,false};
 	playerHorizontal = 1;
 }
 
@@ -172,10 +190,10 @@ void Scene::UpdatePlayer()
 	else {
 		shiftKeyFlg = false;
 	}
-	//落下したら戻る
-	if (player.y < mapChip[mapHeight - 1][0].y - 100) {
-		player.y = 0;
-		player.x = 0;
+	//落下したら初期値に戻る
+	if (player.y < mapChip[mapHeight - 1][0].y - 200) {
+		player.y = room[nowRoom].pX;
+		player.x = room[nowRoom].pY;
 	}
 
 
@@ -318,7 +336,7 @@ void Scene::BlockHit()
 
 void Scene::InitBlock()
 {
-		block = { -60.0f,20,0,0,2 };
+		block = { room[nowRoom].bX,room[nowRoom].bY,0,0,2};
 		blockJumpFlg = false;
 	
 }
@@ -345,12 +363,15 @@ void Scene::UpdateBlock()
 				block.moveY = jumpPower;
 			}
 		}
-		else { cflg = 0; }
+		else { 
+			cflg = 0; 
+		}
 	}
 	
-	if (block.y < mapChip[mapHeight - 1][0].y - 50) {
-		block.y = 0;
-		block.x = 0;
+	//落下したら初期値に戻る
+	if (block.y < mapChip[mapHeight - 1][0].y - 200) {
+		block.y = room[nowRoom].bX;
+		block.x = room[nowRoom].bY;
 	}
 
 	//BlockHit(&block.x, &block.y, &block.moveX, &block.moveY, bn);
@@ -376,19 +397,46 @@ void Scene::LoadRoom()
 	fp = fopen("Room.txt", "r");
 	//文字読み込み処理
 	
-	fscanf(fp, "%d%f%f%f%f%d", );
-
+	for (int rn = 0; rn < roomNum; rn++) {
+						//部屋番号,初期値x,y,ブロックの初期値x,y,脱出に必要なスコア
+		int b = fscanf(fp, "%d%f%f%f%f%d", &room[rn].number, &room[rn].pX, &room[rn].pY,
+												&room[rn].bX, &room[rn].bY, &room[rn].clearScore);
+	}
 	fclose(fp);
 }
 
 void Scene::NextRoom()
 {
-	
-	if (score == clearScore) {
-		if (GetAsyncKeyState('E') & 0x8000) {
-			player.x +=80;
-			score = 0;
-			block.x += 300;
+	if (GetAsyncKeyState('E') & 0x8000) {
+		for (int h = 0; h < mapHeight; h++) {
+			for (int w = 0; w < mapWidth; w++) {
+				//mapChipがドアの時の処理
+				if (mapChip[h][w].flg == 9) {
+					//白の時だけ実行
+					if (!changeStageFlg) {
+						const float playerLeft = player.x - playerRadius;
+						const float playerRight = player.x + playerRadius;
+						const float playerBottom = player.y - playerRadius;
+						const float playerTop = player.y + playerRadius;
+
+						const float chipLeft = mapChip[h][w].baseX - mapRadius;
+						const float chipRight = mapChip[h][w].baseX + mapRadius;
+						const float chipBottom = mapChip[h][w].baseY - mapRadius;
+						const float chipTop = mapChip[h][w].baseY + mapRadius;
+
+						if (playerRight > chipLeft && playerLeft < chipRight && playerTop > chipBottom && playerBottom < chipTop) {	//縦と横で重なっているか
+							if (score == room[nowRoom].clearScore) {
+								nowRoom++;
+								player.x = room[nowRoom].pX;
+								player.y = room[nowRoom].pY;
+								block.x = room[nowRoom].bX;
+								block.y = room[nowRoom].bY;
+								score = 0;
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 }
@@ -491,12 +539,19 @@ void Scene::DrawMap()
 					SHADER.m_spriteShader.DrawBox(mapChip[h][w].x, mapChip[h][w].y, 18, 18, &color, true);
 				}
 			}
+			if (mapChip[h][w].flg == 9) {
+				if (!changeStageFlg) {
+					SHADER.m_spriteShader.DrawBox(mapChip[h][w].x, mapChip[h][w].y + 10, 20, 30, &bcolor, true);
+					SHADER.m_spriteShader.DrawBox(mapChip[h][w].x, mapChip[h][w].y + 10, 18, 28, &wcolor, true);
+				}
+			}
+
 			//SHADER.m_spriteShader.DrawCircle(mapChip[h][w].baseX, mapChip[h][w].baseY, 3, &bcolor, true);
 		}
 	}
 }
 
-void Scene::FadeInOut()
+void Scene::FadeInOut(bool* flg)
 {
 	if (fadeFrame < 30) {
 		color = { 0,0,0,fadeFrame / 30.0f };
@@ -505,7 +560,7 @@ void Scene::FadeInOut()
 		fadeFrame++;
 	}
 	if(fadeFrame == 30){
-		changeStageFlg = !changeStageFlg;
+		*flg = !*flg;
 		fadeFrame++;
 	}
 	if (fadeFrame > 30) {

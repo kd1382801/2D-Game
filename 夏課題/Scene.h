@@ -8,7 +8,7 @@ enum SceneType
 	Result	//2:リザルト
 };
 
-enum Score {
+enum My {
 	Red = 1 << 0 ,
 	Blue = 1 << 1,
 	Green = 1 << 2
@@ -56,12 +56,12 @@ struct Map {
 
 struct Room
 {
-	int number;
-	float nowX;
-	float nowY;
-	float nextX;
-	float nextY;
-	int clearScore;
+	int number;//部屋番号
+	float pX;//初期値x
+	float pY;//初期値y
+	float bX;//ブロックの初期値x
+	float bY;//ブロックの初期値y
+	int clearScore;//クリアするために必要なスコア
 };
 
 class Scene
@@ -79,6 +79,7 @@ private:
 
 	SceneType nowScene;//シーン管理変数
 	int frame;//フレーム数
+	int clearFrame;//クリアタイム用フレーム
 	const float gravity = 1.0f;//重力
 
 	//プレイヤー用
@@ -89,14 +90,13 @@ private:
 
 	//ブロック用
 	const float blockRadius = 20.0f;
-	static const int blockNum = 3;
 	Block block;
 	bool blockJumpFlg;//ブロック用ジャンプフラグ
 	bool shiftKeyFlg;
 	int cflg;
 
 	//ステージ用
-	static const int mapHeight = 11;
+	static const int mapHeight = 13;
 	static const int mapWidth = 64;
 	const float mapRadius = 20.0f;
 	Map mapChip[mapHeight][mapWidth];
@@ -107,13 +107,13 @@ private:
 	//フェードインアウト用
 	int fadeFrame;
 	bool doFadeInOut; // 0:停止 1:実行
-
-	int score;//今のスコア
-	int clearScore = 1;//クリアするために必要なスコア
 	
 	//部屋情報
-	static const int roomNum = 2;
+	static const int roomNum = 3;
 	Room room[roomNum];
+	int nowRoom;//今の部屋
+	int score;	//今のスコア
+
 
 public:
 
@@ -182,8 +182,8 @@ public:
 	void DrawMap();
 
 
-	//フェードインアウト
-	void FadeInOut();
+	//フェードインアウト(bool型のフラグを変える)
+	void FadeInOut(bool* flg = false);
 
 
 private:
