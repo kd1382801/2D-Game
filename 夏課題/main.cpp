@@ -33,7 +33,7 @@ bool Application::Init(int w, int h)
 	//===================================================================
 	// ウィンドウ作成
 	//===================================================================
-	if (m_window.Create(w, h, "DirectX", "Window") == false) {
+	if (m_window.Create(w, h, "SetBlocks", "Window") == false) {
 		MessageBoxA(nullptr, "ウィンドウ作成に失敗", "エラー", MB_OK);
 		return false;
 	}
@@ -194,7 +194,7 @@ void Application::Execute()
 		//=========================================
 
 		// バックバッファクリア
-		D3D.GetDevContext()->ClearRenderTargetView(D3D.GetBackBuffer(), Math::Color(0.3f, 0.3f, 0.5f, 1));
+		D3D.GetDevContext()->ClearRenderTargetView(D3D.GetBackBuffer(), Math::Color(1.0f, 1.0f, 1.0f, 1));
 		// Zバッファクリア
 		D3D.GetDevContext()->ClearDepthStencilView(D3D.GetZBuffer(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
 
