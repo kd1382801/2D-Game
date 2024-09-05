@@ -3,20 +3,53 @@
 
 void Scene::Draw2D()
 {
+	//ƒvƒŒƒCƒ„[
 	SHADER.m_spriteShader.SetMatrix(player.mat);
-	SHADER.m_spriteShader.DrawTex(&playerTex, Math::Rectangle{ 0,0,64,64 }, 1.0f);
+	SHADER.m_spriteShader.DrawTex(&playerTex, Math::Rectangle{ 0,0,64,64 }, player.alpha);
+
+	//“G
+	SHADER.m_spriteShader.SetMatrix(enemy.mat);
+	SHADER.m_spriteShader.DrawTex(&enemyTex, Math::Rectangle{ 0,0,64,64 }, enemy.alpha);
+	
+	//ƒLƒƒƒ‰
+	SHADER.m_spriteShader.SetMatrix(chara.mat);
+	SHADER.m_spriteShader.DrawTex(&charaTex, Math::Rectangle{ 0,0,64,64 }, chara.alpha);
+
 }
 
 void Scene::Update()
 {
-	player.y = sinf(player.angle) * 200;
-	player.angle+=0.1f;
+	//ƒvƒŒƒCƒ„[
+	player.angle += 3;
 	if (player.angle >= 360) {
 		player.angle = 0;
 	}
+	//sin‚Å-1`1‚ğ‹‚ß‚é
+	player.y = sin(DirectX::XMConvertToRadians(player.angle)) * 100;
+	//ƒAƒ‹ƒtƒ@’l‚É”½‰f -1`1 ‚ğ 0`1 ‚É•â³
+	player.alpha = sin(DirectX::XMConvertToRadians(player.angle)) * 0.5f + 0.5f;
+
+	//“G
+	enemy.angle += 5;
+	if (enemy.angle >= 360) {
+		enemy.angle = 0;
+	}
+	//fabs:ˆø”‚Ìâ‘Î’l‚ğfloatŒ^‚Å•Ô‚·
+	enemy.y = fabs(sin(DirectX::XMConvertToRadians(enemy.angle))) * 100;
+
+	//ƒLƒƒƒ‰
+	chara.angle += 5;
+	if (chara.angle >= 360) {
+		chara.angle = 0;
+	}
+	//Šg‘å—¦‚Ì’l‚É”½‰f -1`1 ‚ğ 0`1 ‚É•â³
+	chara.size = sin(DirectX::XMConvertToRadians(chara.angle)) * 0.5f + 0.5f;
 
 
 	player.mat = Math::Matrix::CreateTranslation(player.x, player.y, 0);
+	enemy.mat = Math::Matrix::CreateTranslation(enemy.x, enemy.y, 0);
+	chara.mat = Math::Matrix::CreateScale(chara.size, 1, 1);
+	
 }
 
 void Scene::Init()
@@ -24,8 +57,23 @@ void Scene::Init()
 	// ‰æ‘œ‚Ì“Ç‚İ‚İˆ—
 	playerTex.Load("Texture/player.png");
 	enemyTex.Load("Texture/enemy.png");
+	charaTex.Load("Texture/Chara.png");
 
-	player = { 0,0,0 };
+	player.x = -300.0f;
+	player.y = 0.0f;
+	player.angle = 0.0f;
+	player.alpha = 1.0f;
+
+	enemy.x = 300.0f;
+	enemy.y = 0.0f;
+	enemy.angle = 0.0f;
+	enemy.alpha = 1.0f;
+
+	chara.x = 0.0f;
+	chara.y = 0.0f;
+	chara.angle = 0.0f;
+	chara.alpha = 1.0f;
+	chara.size = 1.0f;
 }
 
 void Scene::Release()
@@ -33,6 +81,7 @@ void Scene::Release()
 	// ‰æ‘œ‚Ì‰ğ•úˆ—
 	playerTex.Release();
 	enemyTex.Release();
+	charaTex.Release();
 }
 
 void Scene::ImGuiUpdate()

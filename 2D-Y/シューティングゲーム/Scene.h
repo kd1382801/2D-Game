@@ -1,26 +1,18 @@
 #pragma once
 
-struct Object
-{
+struct Chara {
 	float x;
 	float y;
-	float angle;	//sinに渡す角度
-	float alpha;	//透明度
-	float size;		//拡大率
+	float moveSpeed;
 	Math::Matrix mat;
+	KdTexture tex;
 };
 
 class Scene
 {
 private:
-	KdTexture playerTex;	//画像は構造体に含めない
-	KdTexture enemyTex;
-	KdTexture charaTex;
 
-	Object player;
-	Object enemy;
-	Object chara;
-
+	struct Chara m_player;
 
 public:
 
@@ -38,6 +30,11 @@ public:
 
 	// GUI処理
 	void ImGuiUpdate();
+
+	//プレイヤー用
+	void PlayerInit();
+	void PlayerUpdate();
+	void PlayerDraw();
 
 private:
 
