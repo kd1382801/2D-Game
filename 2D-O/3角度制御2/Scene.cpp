@@ -5,11 +5,12 @@ void Scene::Draw2D()
 {
 	DrawPlayer();
 	DrawSight();
+	DrawBullet();
 
 	//文字列はテクスチャなどを描画した後に書くこと
 	// 文字列表示
-	SHADER.m_spriteShader.DrawString(230, 350, "角度制御１", Math::Vector4(0, 0, 0, 1));
-	SHADER.m_spriteShader.DrawString(230+8, 350-5, "角度制御１", Math::Vector4(1, 1, 0, frame / 180.0f));
+	SHADER.m_spriteShader.DrawString(230, 350, "角度制御２", Math::Vector4(0, 0, 0, 1));
+	SHADER.m_spriteShader.DrawString(230+8, 350-5, "角度制御２", Math::Vector4(1, 1, 0, frame / 180.0f));
 
 	char str[50];
 	sprintf_s(str, sizeof(str), "deg:%.2f", deg);
@@ -23,6 +24,7 @@ void Scene::Update()
 {
 	UpdatePlayer();
 	UpdateSight();
+	UpdateBullet();
 	
 	//フレーム数を増やす
 	frame++;
@@ -33,9 +35,17 @@ void Scene::Init()
 	// 画像の読み込み処理
 	player.m_texture.Load("Texture/smile_transparent.png");
 	sight.m_texture.Load("Texture/sight_transparent.png");
+	charaTex.Load("Texture/bullet_transparent.png");
+
+	//読み込んだテクスチャ(charaTex)のアドレスをm_pTextureへ入れる
+	for (int b = 0; b < bulletNum; b++) {
+		bullet[b].m_pTexture = &charaTex;
+	}
 
 	InitPlayer();
 	InitSight();
+	InitBullet();
+
 	frame = 0;
 }
 
@@ -44,6 +54,7 @@ void Scene::Release()
 	// 画像の解放処理
 	player.m_texture.Release();
 	sight.m_texture.Release();
+	charaTex.Release();
 }
 
 void Scene::ImGuiUpdate()
@@ -153,4 +164,33 @@ void Scene::DrawSight()
 	Math::Rectangle srcRect{ 0,0,32,32 };			//テクスチャ座標
 	Math::Color color = { 1.0f,1.0f,1.0f,1.0f };	//色RGBA
 	SHADER.m_spriteShader.DrawTex(&sight.m_texture, 0, 0, &srcRect, &color);
+}
+
+void Scene::InitBullet()
+{
+	for (int b = 0; b < bulletNum; b++) {
+		bullet[b].m_posX = 0;
+		bullet[b].m_posY = 0;
+		bullet[b].m_bActive = false;
+	}
+}
+
+void Scene::UpdateBullet()
+{
+	for (int b = 0; b < bulletNum; b++) {
+
+
+		bullet[b].m_matrix = Math::Matrix::CreateTranslation(bullet[b].m_posX, bullet[b].m_posY, 0);
+	}
+}
+
+void Scene::DrawBullet()
+{
+	for (int b = 0; b < bulletNum; b++) {
+		SHADER.m_spriteShader.SetMatrix(bullet[b].m_matrix);
+
+		Math::Rectangle srcRect{ 0,0,32,32 };			//テクスチャ座標
+		Math::Color color = { 1.0f,1.0f,1.0f,1.0f };	//色RGBA
+		SHADER.m_spriteShader.DrawTex(bullet[b].m_pTexture, 0, 0, &srcRect, &color);
+	}
 }
