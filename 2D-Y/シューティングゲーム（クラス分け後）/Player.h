@@ -11,8 +11,12 @@ public:
 	void Update();
 	void Draw();
 
+	void SetTex(KdTexture* pTex);
+
+private:
+
 	const float m_moveSpeed = 5.0f;
-	KdTexture m_tex;
+	KdTexture* m_pTex;
 	Math::Vector2 m_pos;
 	Math::Matrix m_mat;
 

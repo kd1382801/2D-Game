@@ -1,18 +1,16 @@
 #pragma once
-
-struct Chara {
-	float x;
-	float y;
-	float moveSpeed;
-	Math::Matrix mat;
-	KdTexture tex;
-};
+#include "Player.h"
+#include "Enemy.h"
 
 class Scene
 {
 private:
 
-	struct Chara m_player;
+	C_Player m_player;
+	C_Enemy m_enemy;
+
+	KdTexture m_playerTex;
+	KdTexture m_enemyTex;
 
 public:
 
@@ -30,11 +28,6 @@ public:
 
 	// GUI処理
 	void ImGuiUpdate();
-
-	//プレイヤー用
-	void PlayerInit();
-	void PlayerUpdate();
-	void PlayerDraw();
 
 private:
 
