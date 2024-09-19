@@ -6,6 +6,8 @@ class Scene
 {
 private:
 
+	POINT m_mousePos;
+
 	C_Player m_player;
 	C_Enemy m_enemy;
 
@@ -28,6 +30,11 @@ public:
 
 	// GUI処理
 	void ImGuiUpdate();
+
+	//マウス座標計算
+	void CalcMousePos();
+	
+	C_Enemy* GetEnemy();
 
 private:
 
