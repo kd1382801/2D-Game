@@ -6,11 +6,12 @@ void Scene::Draw2D()
 	DrawPlayer();
 	DrawSight();
 	DrawBullet();
+	DrawEnemy();
 
 	//文字列はテクスチャなどを描画した後に書くこと
 	// 文字列表示
-	SHADER.m_spriteShader.DrawString(230, 350, "角度制御２", Math::Vector4(0, 0, 0, 1));
-	SHADER.m_spriteShader.DrawString(230+8, 350-5, "角度制御２", Math::Vector4(1, 1, 0, frame / 180.0f));
+	SHADER.m_spriteShader.DrawString(230, 350, "角度制御３", Math::Vector4(0, 0, 0, 1));
+	SHADER.m_spriteShader.DrawString(230+8, 350-5, "角度制御３", Math::Vector4(1, 1, 0, frame / 180.0f));
 
 	char str[50];
 	sprintf_s(str, sizeof(str), "deg:%.2f", deg);
@@ -25,6 +26,7 @@ void Scene::Update()
 	UpdatePlayer();
 	UpdateSight();
 	UpdateBullet();
+	UpdateEnemy();
 	
 	//フレーム数を増やす
 	frame++;
@@ -38,6 +40,7 @@ void Scene::Init()
 	player.m_texture.Load("Texture/smile_transparent.png");
 	sight.m_texture.Load("Texture/sight_transparent.png");
 	charaTex.Load("Texture/bullet_transparent.png");
+	enemy.m_texture.Load("Texture/smile_transparent.png");
 
 	//読み込んだテクスチャ(charaTex)のアドレスをm_pTextureへ入れる
 	for (int b = 0; b < bulletNum; b++) {
@@ -47,6 +50,7 @@ void Scene::Init()
 	InitPlayer();
 	InitSight();
 	InitBullet();
+	InitEnemy();
 
 	keyCount = 0;
 
@@ -59,6 +63,7 @@ void Scene::Release()
 	player.m_texture.Release();
 	sight.m_texture.Release();
 	charaTex.Release();
+	enemy.m_texture.Release();
 }
 
 void Scene::ImGuiUpdate()
@@ -178,7 +183,7 @@ void Scene::DrawPlayer()
 
 	//描画
 	Math::Rectangle srcRect{ 0,0,64,64 };			//テクスチャ座標
-	Math::Color color = { 1.0f,0.5f,1.0f,1.0f };	//色RGBA
+	Math::Color color = { 1.0f,1.0f,1.0f,1.0f };	//色RGBA
 	SHADER.m_spriteShader.DrawTex(&player.m_texture, 0, 0, &srcRect, &color);
 }
 
@@ -212,6 +217,35 @@ void Scene::DrawSight()
 	Math::Rectangle srcRect{ 0,0,32,32 };			//テクスチャ座標
 	Math::Color color = { 1.0f,1.0f,1.0f,1.0f };	//色RGBA
 	SHADER.m_spriteShader.DrawTex(&sight.m_texture, 0, 0, &srcRect, &color);
+}
+
+void Scene::InitEnemy()
+{
+	enemy.m_posX = 0;
+	enemy.m_posY = 300;
+	enemy.m_moveX = 4;
+	enemy.m_moveY = 0;
+	enemy.m_radius = 32;
+}
+
+void Scene::UpdateEnemy()
+{
+	enemy.m_posX += enemy.m_moveX;
+	enemy.m_posY += enemy.m_moveY;
+
+	if (enemy.m_posX < SCREEN_LEFT + enemy.m_radius || enemy.m_posX > SCREEN_RIGHT - enemy.m_radius) {
+		enemy.m_moveX *= -1;
+	}
+
+	enemy.m_matrix = Math::Matrix::CreateTranslation(enemy.m_posX, enemy.m_posY, 0);
+}
+
+void Scene::DrawEnemy()
+{
+	SHADER.m_spriteShader.SetMatrix(enemy.m_matrix);
+	Math::Rectangle srcRect = { 0,0,64,64 };
+	Math::Color color = { 1.0f,0.0f,0.0f,0.5f };
+	SHADER.m_spriteShader.DrawTex(&enemy.m_texture,0,0, &srcRect, &color);
 }
 
 void Scene::InitBullet()

@@ -36,6 +36,17 @@ struct tBullet
 
 };
 
+struct tEnemy
+{
+	float m_posX;
+	float m_posY;
+	float m_moveX;
+	float m_moveY;
+	float m_radius;
+	Math::Matrix m_matrix;
+	KdTexture m_texture;
+};
+
 class Scene
 {
 private:
@@ -44,6 +55,9 @@ private:
 
 	//è∆èÄäÌ
 	struct tSight sight;
+
+	//ìG
+	struct tEnemy enemy;
 
 	//íe
 	static const int bulletNum = 200;
@@ -91,6 +105,11 @@ public:
 	void InitSight();
 	void UpdateSight();
 	void DrawSight();
+
+	//ìGóp
+	void InitEnemy();
+	void UpdateEnemy();
+	void DrawEnemy();
 
 	//íeóp
 	void InitBullet();
