@@ -28,6 +28,8 @@ struct tBullet
 	float m_moveX;
 	float m_moveY;
 	float m_speed;
+	int m_count;				//動作管理用カウンタ
+	bool m_bHoming;				//ホーミングフラグ
 	bool m_bActive;				//フラグ
 	Math::Matrix m_matrix;
 	KdTexture* m_pTexture;		//テクスチャ(ポインタ)
@@ -123,6 +125,9 @@ public:
 	//角度を求める関数			(src:source元、源)	(dest:destination目的地、行き先)
 	float GetAngleRad(float srcX, float srcY, float destX, float destY);
 	float GetAngleDeg(float srcX, float srcY, float destX, float destY);
+
+	//距離を求める関数
+	float GetDistance(float srcX, float srcY, float destX, float destY);
 
 private:
 

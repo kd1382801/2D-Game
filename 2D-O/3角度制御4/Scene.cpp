@@ -4,7 +4,7 @@
 void Scene::Draw2D()
 {
 	DrawPlayer();
-	DrawSight();
+	//DrawSight();
 	DrawBullet();
 	DrawEnemy();
 
@@ -171,6 +171,9 @@ void Scene::UpdatePlayer()
 		//Dキーでデバッグモード切り換え(トグル動作)
 		if (GetAsyncKeyState('D') & 0x8000) {
 			debugFlg = !debugFlg;
+			//敵をワープさせる
+			enemy.m_posX = -500;
+			enemy.m_matrix = Math::Matrix::CreateTranslation(enemy.m_posX, enemy.m_posY, 0);
 		}
 	}
 
@@ -270,8 +273,41 @@ void Scene::UpdateBullet()
 	for (int b = 0; b < bulletNum; b++) {
 		if (bullet[b].m_bActive) {
 
+			bullet[b].m_count++;
+			if (bullet[b].m_count > 120) {
+				bullet[b].m_bHoming = false;
+			}
+
+			////弾の動きにストーリー性をを持たせない場合
+			//if (bullet[b].m_count < 20) {
+			//	bullet[b].m_bHoming = false;
+			//}
+			//else if (bullet[b].m_count < 100) {
+			//	bullet[b].m_moveX = 0;
+			//	bullet[b].m_moveY = 0;
+			//}
+			//else if (bullet[b].m_count == 180) {
+			//	bullet[b].m_bHoming = true;
+			//}
+
+			//ホーミングフラグがtrueのとき
+			if (bullet[b].m_bHoming) {
+				//角度を求める
+				deg = GetAngleDeg(bullet[b].m_posX, bullet[b].m_posY, enemy.m_posX, enemy.m_posY);
+				//移動量を再計算する
+				bullet[b].m_moveX = cos(DirectX::XMConvertToRadians(deg)) * bullet[b].m_speed;
+				bullet[b].m_moveY = sin(DirectX::XMConvertToRadians(deg)) * bullet[b].m_speed;
+			}
+
+			//座標更新
+			bullet[b].m_count = 0;
 			bullet[b].m_posX += bullet[b].m_moveX;
 			bullet[b].m_posY += bullet[b].m_moveY;
+
+			//弾と敵の当たり判定
+			if (GetDistance(bullet[b].m_posX, bullet[b].m_posY, enemy.m_posX, enemy.m_posY) < enemy.m_radius) {
+				bullet[b].m_bActive = false;
+			}
 
 			//画面端判定
 			if (bullet[b].m_posX < SCREEN_LEFT ||
@@ -317,6 +353,7 @@ void Scene::ShotBullet()
 			bullet[b].m_srcRect = { 0,0,32,32 };
 			bullet[b].m_color = { rand() / (float)RAND_MAX + 0.5f,rand() / 32767.0f + 0.5f,rand() / 32767.0f + 0.5f,1 };
 			
+			bullet[b].m_bHoming = true;
 			bullet[b].m_bActive = true;
 			break;
 		}
@@ -338,6 +375,8 @@ void Scene::ShotBulletDS(float a_degree, float a_speed)
 			bullet[b].m_srcRect = { 0,0,32,32 };
 			bullet[b].m_color = { rand() / (float)RAND_MAX + 0.2f,rand() / 32767.0f + 0.2f,1,1 };
 
+			bullet[b].m_count = 0;
+			bullet[b].m_bHoming = false;
 			bullet[b].m_bActive = true;
 			break;
 		}
@@ -370,4 +409,14 @@ float Scene::GetAngleDeg(float srcX, float srcY, float destX, float destY)
 	}
 
 	return deg;
+}
+
+float Scene::GetDistance(float srcX, float srcY, float destX, float destY)
+{
+	float a, b, c;
+
+	a = destX - srcX;
+	b = destY - srcY;
+	c = sqrt(a * a + b * b);
+	return c;
 }
