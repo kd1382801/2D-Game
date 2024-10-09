@@ -10,8 +10,8 @@ void Scene::Draw2D()
 
 	//文字列はテクスチャなどを描画した後に書くこと
 	// 文字列表示
-	SHADER.m_spriteShader.DrawString(230, 350, "角度制御４", Math::Vector4(0, 0, 0, 1));
-	SHADER.m_spriteShader.DrawString(230+8, 350-5, "角度制御４", Math::Vector4(1, 1, 0, frame / 180.0f));
+	SHADER.m_spriteShader.DrawString(230, 350, "角度制御５", Math::Vector4(0, 0, 0, 1));
+	SHADER.m_spriteShader.DrawString(230+8, 350-5, "角度制御５", Math::Vector4(1, 1, 0, frame / 180.0f));
 
 	char str[50];
 	sprintf_s(str, sizeof(str), "deg:%.2f", deg);
@@ -265,6 +265,7 @@ void Scene::InitBullet()
 		bullet[b].m_posX = 0;
 		bullet[b].m_posY = 0;
 		bullet[b].m_bActive = false;
+		bullet[b].m_deg = 0;
 	}
 }
 
@@ -273,47 +274,46 @@ void Scene::UpdateBullet()
 	for (int b = 0; b < bulletNum; b++) {
 		if (bullet[b].m_bActive) {
 
+			//2秒間ホーミング
 			bullet[b].m_count++;
-			if (bullet[b].m_count > 120) {
+			if (bullet[b].m_count > 60 * 2) {
 				bullet[b].m_bHoming = false;
 			}
 
-			////弾の動きにストーリー性をを持たせない場合
-			//if (bullet[b].m_count < 20) {
-			//	bullet[b].m_bHoming = false;
-			//}
-			//else if (bullet[b].m_count < 100) {
-			//	bullet[b].m_moveX = 0;
-			//	bullet[b].m_moveY = 0;
-			//}
-			//else if (bullet[b].m_count == 180) {
-			//	bullet[b].m_bHoming = true;
-			//}
+			//弾の動きにストーリー性をを持たせない場合
+			/*if (bullet[b].m_count < 20) {
+				bullet[b].m_bHoming = false;
+			}
+			else if (bullet[b].m_count < 100) {
+				bullet[b].m_moveX = 0;
+				bullet[b].m_moveY = 0;
+			}
+			else if (bullet[b].m_count == 180) {
+				bullet[b].m_bHoming = true;
+			}*/
 
+			//ホーミング処理
 			//ホーミングフラグがtrueのとき
-			if (bullet[b].m_bHoming) {
-				//角度を求める
-				deg = GetAngleDeg(bullet[b].m_posX, bullet[b].m_posY, enemy.m_posX, enemy.m_posY);
-				//移動量を再計算する
-				bullet[b].m_moveX = cos(DirectX::XMConvertToRadians(deg)) * bullet[b].m_speed;
-				bullet[b].m_moveY = sin(DirectX::XMConvertToRadians(deg)) * bullet[b].m_speed;
+			if (bullet[b].m_bHoming == true) {
+				Homing(b);
 			}
 
 			//座標更新
-			bullet[b].m_count = 0;
+			//bullet[b].m_count = 0;
 			bullet[b].m_posX += bullet[b].m_moveX;
 			bullet[b].m_posY += bullet[b].m_moveY;
 
 			//弾と敵の当たり判定
 			if (GetDistance(bullet[b].m_posX, bullet[b].m_posY, enemy.m_posX, enemy.m_posY) < enemy.m_radius) {
-				bullet[b].m_bActive = false;
+				//bullet[b].m_bActive = false;
+				bullet[b].m_bHoming = false;//ホーミング終了
 			}
 
 			//画面端判定
-			if (bullet[b].m_posX < SCREEN_LEFT ||
-			    bullet[b].m_posX > SCREEN_RIGHT ||
-			    bullet[b].m_posY > SCREEN_TOP ||
-			    bullet[b].m_posY < SCREEN_BOTTOM) {
+			if (bullet[b].m_posX < SCREEN_LEFT  -100||
+			    bullet[b].m_posX > SCREEN_RIGHT +100||
+			    bullet[b].m_posY > SCREEN_TOP   +100||
+			    bullet[b].m_posY < SCREEN_BOTTOM-100) {
 				bullet[b].m_bActive = false;
 			}
 			bullet[b].m_matrix = Math::Matrix::CreateTranslation(bullet[b].m_posX, bullet[b].m_posY, 0);
@@ -342,7 +342,8 @@ void Scene::ShotBullet()
 
 			/*bullet[b].m_moveX = rand() % 11 - 5;
 			bullet[b].m_moveY = rand() % 11 - 5;*/
-
+			
+			bullet[b].m_deg = 270;	//自機の真下へ発射
 			bullet[b].m_speed = 10.0f;
 
 			deg = GetAngleDeg(player.m_posX, player.m_posY, enemy.m_posX, enemy.m_posY);
@@ -352,7 +353,7 @@ void Scene::ShotBullet()
 
 			bullet[b].m_srcRect = { 0,0,32,32 };
 			bullet[b].m_color = { rand() / (float)RAND_MAX + 0.5f,rand() / 32767.0f + 0.5f,rand() / 32767.0f + 0.5f,1 };
-			
+			bullet[b].m_count = 0;
 			bullet[b].m_bHoming = true;
 			bullet[b].m_bActive = true;
 			break;
@@ -381,6 +382,72 @@ void Scene::ShotBulletDS(float a_degree, float a_speed)
 			break;
 		}
 	}
+}
+
+void Scene::Homing(int b)
+{
+	//検証
+	/*if (b % 2==0) {
+		bullet[b].m_deg += turnDeg;
+	}else{
+		bullet[b].m_deg -= turnDeg;
+	}*/
+	
+	//①角度を求める
+	float targetDeg = GetAngleDeg(bullet[b].m_posX, bullet[b].m_posY, enemy.m_posX, enemy.m_posY);
+
+	float diffDeg;//角度差 = ターゲット角度 - 現在角度 で角度差を求める
+	diffDeg = targetDeg - bullet[b].m_deg;
+
+	//②補正(0~359にする)
+	if (diffDeg < 0) {
+		diffDeg += 360;
+	}
+
+	//③角度差の値で旋回方向を決める
+	//角度差が180未満の場合
+	if (diffDeg < 180) {
+		//反時計回り
+		bullet[b].m_deg += turnDeg;
+		
+		//補正(0~359にする)
+		if (bullet[b].m_deg >= 360) {
+			bullet[b].m_deg -= 360;
+		}
+	}
+	else {
+		//時計回り
+		bullet[b].m_deg -= turnDeg;
+		
+		//補正(0~359にする)
+		if (bullet[b].m_deg < 0) {
+			bullet[b].m_deg += 360;
+		}
+	}
+
+	//視界ありの場合(+-90度)
+	/*if (diffDeg < 90) {
+		//反時計回り
+		bullet[b].m_deg += turnDeg;
+
+		//補正(0~359にする)
+		if (bullet[b].m_deg >= 360) {
+			bullet[b].m_deg -= 360;
+		}
+	}
+	else if(diffDeg >= 360 - 90){
+		//時計回り
+		bullet[b].m_deg -= turnDeg;
+
+		//補正(0~359にする)
+		if (bullet[b].m_deg < 0) {
+			bullet[b].m_deg += 360;
+		}
+	}*/
+
+	//移動量を再計算する
+	bullet[b].m_moveX = cos(DirectX::XMConvertToRadians(bullet[b].m_deg)) * bullet[b].m_speed;
+	bullet[b].m_moveY = sin(DirectX::XMConvertToRadians(bullet[b].m_deg)) * bullet[b].m_speed;
 }
 
 float Scene::GetAngleRad(float srcX, float srcY, float destX, float destY)
