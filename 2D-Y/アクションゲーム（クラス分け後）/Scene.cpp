@@ -3,28 +3,37 @@
 
 void Scene::Draw2D()
 {
+	m_map.Draw();
 	m_player.Draw();
 }
 
 void Scene::Update()
 {
 	m_player.Update();
+	m_map.Update();
 }
 
 void Scene::Init()
 {
+	m_map.LoadMap();
+
 	// ‰æ‘œ‚Ì“Ç‚İ‚İˆ—
 	m_playerTex.Load("Texture/Player/Chara.png");
+	m_mapTex.Load("Texture/Map/MapChip.png");
 
 	m_player.SetTex(&m_playerTex);
+	m_map.SetTex(&m_mapTex);
 
 	m_player.Init();
+	m_map.Init();
+
 }
 
 void Scene::Release()
 {
 	// ‰æ‘œ‚Ì‰ğ•úˆ—
 	m_playerTex.Release();
+	m_mapTex.Release();
 }
 
 void Scene::ImGuiUpdate()

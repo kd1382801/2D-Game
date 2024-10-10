@@ -7,10 +7,18 @@ public:
 	~C_Player(){}
 
 	void Init();
+	void Action();
 	void Update();
 	void Draw();
 
+	void MapHitX(float posX, float moveX);
+	void MapHitY(float posY, float moveY, bool jump);
+
 	void SetTex(KdTexture* tex) { m_pTex = tex; }
+
+	Math::Vector2 GetPos() { return m_pos; }
+	Math::Vector2 GetFuturePos() { return m_pos + m_move; }
+	float GetRadius() { return 32.0f; }
 
 private:
 

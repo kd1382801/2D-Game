@@ -13,6 +13,12 @@ public:
 
 	void SetTex(KdTexture* mTex) { m_pTex = mTex; }
 
+	const int GetHeight() { return MapHeight; }
+	const int GetWidth() { return MapWidth; }
+	const Math::Vector2 GetPos(int y, int x) { m_pos[y][x]; }
+	const int GetData(int y, int x) { return m_data[y][x]; }
+	const float GetRadius() { return 32.0f; }
+
 private:
 	
 	static const int MapHeight = 12;

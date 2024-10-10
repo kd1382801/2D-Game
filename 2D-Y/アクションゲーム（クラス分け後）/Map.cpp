@@ -2,7 +2,30 @@
 
 void C_Map::LoadMap()
 {
+	for (int h = 0; h < MapHeight; h++) {
+		for (int w = 0; w < MapWidth; w++) {
+			m_data[h][w] = 0;
+		}
+	}
 
+	FILE* fp;
+	if ((fp = fopen("Texture/Map/Stage.txt", "r")) == nullptr)return;
+	
+	char ch;
+	int h = 0;
+	int w = 0;
+
+	while ((ch = fgetc(fp)) != EOF) {
+		if (ch == '\n') {
+			h++;
+			w = 0;
+		}
+		else {
+			m_data[h][w] = atoi(&ch);
+			w++;
+		}
+	}
+	fclose(fp);
 }
 
 void C_Map::Init()

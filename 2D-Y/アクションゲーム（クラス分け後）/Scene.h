@@ -1,13 +1,16 @@
 #pragma once
 #include "Player.h"
+#include "Map.h"
 
 class Scene
 {
 private:
 
 	C_Player m_player;
-
 	KdTexture m_playerTex;
+
+	C_Map m_map;
+	KdTexture m_mapTex;
 
 public:
 
